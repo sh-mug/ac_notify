@@ -19,7 +19,7 @@ def get_color(diff):
     elif diff < 2800: return '#FF8000'
     else: return '#FF0000'
 
-def get_json(color, user, contest_id, problem_id, title, diff):
+def get_json(color, user, contest_id, problem_id, title, submission, diff):
     return {
         "attachments": [
             {
@@ -29,7 +29,9 @@ def get_json(color, user, contest_id, problem_id, title, diff):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "{} が <https://atcoder.jp/contests/{}/tasks/{}|{}> をACしたよ:muscle:\n*Difficulty* {}".format(user, contest_id, problem_id, title, diff)
+                            "text":'''{u} が <https://atcoder.jp/contests/{c}/tasks/{p}|{t}> をACしたよ:muscle:
+*提出* <https://atcoder.jp/contests/{c}/submissions/{s}|リンク>
+*Difficulty* {d}'''.format(u=user, c=contest_id, p=problem_id, t=title, s=submission, d=diff)
                         }
                     }
                 ]
@@ -77,7 +79,8 @@ def main():
                 color = get_color(diff)
                 contest_id, problem_id = submission['contest_id'], submission['problem_id']
                 title = t[0] if (t := [p['title'] for p in problems_json if p['id'] == submission['problem_id']]) != [] else None
-                requests.post(webhook_url, data = json.dumps(get_json(color, user, contest_id, problem_id, title, diff)))
+                submission = submission['id']
+                requests.post(webhook_url, data = json.dumps(get_json(color, user, contest_id, problem_id, title, submission, diff)))
         except FileNotFoundError:
             with open(user_path.format(user), 'w') as f:
                 json.dump(requests.get(user_url.format(user)).json(), f)
